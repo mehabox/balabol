@@ -33,9 +33,7 @@ func main() {
 
 	log.Info().Msg("done!")
 
-	for {
-		// forever blocking
-	}
+	select {}
 }
 
 func waitForShutdown() {
