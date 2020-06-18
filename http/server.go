@@ -30,10 +30,12 @@ type Application struct {
 // NewApplication initializes the app, settings routes and making it ready to start.
 func NewApplication(config balabol.AppConfig, handlers HandlerList, router *routing.Router, logger balabol.Logger) *Application {
 	server := &fasthttp.Server{
-		Name:        "balabol",
-		Handler:     router.HandleRequest,
-		Logger:      logger,
-		ReadTimeout: config.ServerConfig.ReadTimeout,
+		Handler:      router.HandleRequest,
+		Name:         "balabol",
+		ReadTimeout:  config.ServerConfig.ReadTimeout,
+		WriteTimeout: config.ServerConfig.WriteTimeout,
+		IdleTimeout:  config.ServerConfig.IdleTimeout,
+		Logger:       logger,
 	}
 
 	return &Application{handlers: handlers, router: router, server: server, logger: logger, config: config}

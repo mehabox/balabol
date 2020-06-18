@@ -3,18 +3,21 @@ package http
 import (
 	"fmt"
 
+	"github.com/mehabox/balabol"
+
 	routing "github.com/qiangxue/fasthttp-routing"
 )
 
-type IndexHandler struct {
+type MainHandler struct {
+	Logger balabol.Logger
 }
 
-func (h *IndexHandler) InitRoutes(r *routing.Router) error {
-	r.Get("/", h.index)
+func (h *MainHandler) InitRoutes(r *routing.Router) error {
+	r.Get("/", logging(slow(h.index), h.Logger))
 	return nil
 }
 
-func (h *IndexHandler) index(c *routing.Context) error {
+func (h *MainHandler) index(c *routing.Context) error {
 	fmt.Fprintf(c, "Welcome")
 	return nil
 }

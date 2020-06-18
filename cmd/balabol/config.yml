@@ -1,3 +1,5 @@
 http:
    listen: "0.0.0.0:8080"
    read_timeout: 1s
+   write_timeout: 3s
+   idle_timeout: 10s

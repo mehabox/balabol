@@ -20,10 +20,6 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
-	handlers := http.HandlerList{
-		&http.IndexHandler{},
-		&admin.Handler{},
-	}
 	log := zerolog.New(zerolog.ConsoleWriter{
 		Out:        os.Stderr,
 		TimeFormat: "2006-01-02 15:04:05",
@@ -33,6 +29,10 @@ func main() {
 	logger.Printf("balabol version %s is starting", version)
 	logger.Println("starting web server")
 
+	handlers := http.HandlerList{
+		&http.MainHandler{Logger: logger},
+		&admin.Handler{},
+	}
 	router := routing.New()
 
 	file, err := ioutil.ReadFile("./cmd/balabol/config.yml")
