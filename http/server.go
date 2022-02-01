@@ -51,7 +51,6 @@ func (app *Application) Start() error {
 	}
 
 	err := app.server.ListenAndServe(app.config.ServerConfig.Listen)
-
 	if err != nil {
 		return err
 	}

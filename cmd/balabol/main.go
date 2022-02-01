@@ -6,8 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/mehabox/balabol/infra/storage"
+	"github.com/mehabox/balabol/items"
+
 	"github.com/mehabox/balabol"
-	"github.com/mehabox/balabol/admin"
+	// "github.com/mehabox/balabol/admin"
 	"github.com/mehabox/balabol/http"
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/rs/zerolog"
@@ -27,11 +30,12 @@ func main() {
 
 	logger := balabol.NewAppLogger(&log)
 	logger.Printf("balabol version %s is starting", version)
-	logger.Println("starting web server")
+
+	repo := items.NewItemsRepository(storage.NewMemoryMapStorage())
 
 	handlers := http.HandlerList{
 		&http.MainHandler{Logger: logger},
-		&admin.Handler{},
+		items.NewItemsHandler(repo),
 	}
 	router := routing.New()
 
@@ -49,7 +53,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := http.NewApplication(getConfig(ymlConfig), handlers, router, logger)
+	cfg := getConfig(ymlConfig)
+	logger.Printf("starting web server at %s", cfg.ServerConfig.Listen)
+	app := http.NewApplication(cfg, handlers, router, logger)
 
 	go func() {
 		err = app.Start()
