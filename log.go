@@ -8,6 +8,8 @@ import (
 type Logger interface {
 	// Printf must have the same semantics as log.Printf.
 	Printf(format string, args ...interface{})
+	// Println outputs a log message ending with a newline sequence.
+	Println(message string)
 	// Error prints out an application error.
 	Error(message string)
 }
@@ -18,7 +20,7 @@ type AppLogger struct {
 }
 
 // NewAppLogger initializes the app's logger.
-func NewAppLogger(provider *zerolog.Logger) *AppLogger {
+func NewAppLogger(provider *zerolog.Logger) Logger {
 	return &AppLogger{
 		provider: provider,
 	}

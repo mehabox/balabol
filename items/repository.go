@@ -6,7 +6,7 @@ type itemsRepository struct {
 	storage balabol.Storage
 }
 
-// GetByPath returns an item by its path
+// GetByPath returns an item by its path.
 func (r *itemsRepository) GetByPath(path string) (balabol.Item, error) {
 	return r.storage.GetByPath(path)
 }

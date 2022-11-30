@@ -2,12 +2,18 @@ package items
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/mehabox/balabol"
 
 	routing "github.com/qiangxue/fasthttp-routing"
 )
+
+type saveItemRequest struct {
+	Type  balabol.ItemType `json:"type"`
+	Value interface{}      `json:"value"`
+}
 
 type Handler struct {
 	repo balabol.ItemsRepository
@@ -25,13 +31,14 @@ func NewItemsHandler(repo balabol.ItemsRepository) *Handler {
 	return &Handler{repo: repo}
 }
 
-// InitRoutes initializes this handler's routes :/.
+// InitRoutes initializes this handler's routes.
 func (h *Handler) InitRoutes(r *routing.Router) error {
 	r.Get(`/api/v<version:\d+><path:.*>`, h.getValue)
+	r.Post(`/api/v<version:\d+><path:.*>`, h.saveValue)
 	return nil
 }
 
-// getValue is a GET handler (gets values from the repository, if they exist).
+// getValue gets values from the repository, if they exist.
 func (h *Handler) getValue(c *routing.Context) error {
 	path := strings.Trim(c.Param("path"), "/ \\")
 
@@ -48,6 +55,39 @@ func (h *Handler) getValue(c *routing.Context) error {
 		return nil
 	}
 
+	_, _ = fmt.Fprintf(c, "%s", item.Value().Bytes())
+	return nil
+}
+
+func (h *Handler) saveValue(c *routing.Context) error {
+	path := strings.Trim(c.Param("path"), "/ \\")
+
+	isNew := false
+
+	var errSave error
+	item, err := h.repo.GetByPath(path)
+	if err != nil {
+		isNew = true
+		item = balabol.NewItem(path, balabol.NewStringValue(string(c.Request.Body())))
+	} else {
+		_ = item.SetValue(balabol.NewStringValue(string(c.Request.Body())))
+	}
+
+	errSave = h.repo.Save(item)
+	if errSave != nil {
+		c.SetStatusCode(http.StatusInternalServerError)
+		c.SetContentType("application/json")
+		_, _ = fmt.Fprintf(c, `{"error": "%s"")`, errSave.Error())
+		return nil
+	}
+
+	if isNew {
+		c.SetStatusCode(http.StatusCreated)
+		_, _ = fmt.Fprintf(c, "%s", item.Value().Bytes())
+		return nil
+	}
+
+	c.SetStatusCode(http.StatusOK)
 	_, _ = fmt.Fprintf(c, "%s", item.Value().Bytes())
 	return nil
 }
